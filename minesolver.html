@@ -1,0 +1,426 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>MineSolver</title>
+<link rel="stylesheet" href="stylesheets/mine.css" type="text/css" />
+<script type="text/javascript">/* <![CDATA[ */
+if (!Array.prototype.forEach) {
+	Array.prototype.forEach = function(fun /*, thisArg */) {
+		"use strict";
+		if (this === void 0 || this === null) throw new TypeError();
+		var t = Object(this);
+		var len = t.length >>> 0;
+		if (typeof fun !== "function") throw new TypeError();
+		var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+		for (var i = 0; i < len; i++) {
+			if (i in t) fun.call(thisArg, t[i], i, t);
+		}
+	};
+}
+/* ]]> */</script>
+</head>
+<body id="minesolver-game">
+<header>
+	<h1>Minimalsweeper</h1>
+	<h2>A minimalist Minesweeper game</h2>
+	<nav><ul>
+		<li><a href="./">Read the article!</a></li>
+	</ul></nav>
+</header>
+
+<fieldset style="float:right; max-width:23em; font-size:80%; box-shadow:-1em 1em rgba(0,0,0,0.125);">
+	<legend>Data Legend</legend>
+	<dl>
+		<dt>Mines</dt><dd>The number of mines in the given grid.</dd>
+		<dt>Flags used, unflagged remaining</dt><dd>The raw number of spaces flagged, the number of unflagged mines remaining.</dd>
+		<dt>Current space</dt><dd>The [x,y] coordinate of the hovered&nbsp;space.</dd>
+		<dt>Surrounding</dt><dd>The raw calculation of covered spaces with buried mines directly adjacent to the hovered&nbsp;space.</dd>
+		<dt>Raw %age (with verified flags)</dt><dd>The probability that the hovered covered space contains an unflagged&nbsp;mine.</dd>
+		<dt>Heuristic %age</dt><dd>Heuristic probability</dd>
+		<dt>Win condition</dt><dd>Whether the given grid is won or lost.</dd>
+	</dl>
+</fieldset>
+
+<section>
+	<h2>About Minimalsweeper</h2>
+	<p>Below is a Minesweeper game. The graphics are minimal because this was hastily written for a particular class project.</p>
+	<p>Observe the following controls:</p>
+	<ul>
+		<li>Mouseover a space to view dynamic mine placement probabilities.</li>
+		<li>Left-click a space to uncover it.</li>
+		<li>Right-click a covered space to flag it.</li>
+		<li>Ctrl-Shift-click a grid to capture its state with hover data to an image.</li>
+		<li>Click "capture image" under a grid to capture its state without hover data to an image.</li>
+	</ul>
+</section>
+
+<section class="cf" id="wr-00">
+<figure class="mc-wr" id="mc-00-wr">
+	<canvas class="mine-canvas" id="mc-00" width="300" height="300"></canvas>
+	<figcaption class="c"><a class="capture" rel="mc-00" href="#capture">capture image</a> (opens in new window)</figcaption>
+</figure>
+<div class="stats" id="mc-00-stats">
+	<dl class="cf">
+		<dt>Mines</dt><dd id="mc-00-stats-count">?</dd>
+		<dt>Flags used, unflagged remaining</dt><dd id="mc-00-stats-flags">?</dd>
+		<dt>Current space</dt><dd id="mc-00-stats-current">?</dd>
+		<dt>Surrounding</dt><dd id="mc-00-stats-surround">?</dd>
+		<dt>Raw %age (with verified flags)</dt><dd id="mc-00-stats-raw">?</dd>
+		<dt>Heuristic %age</dt><dd id="mc-00-stats-adj">?</dd>
+		<dt>Win condition</dt><dd id="mc-00-stats-win">not met</dd>
+	</dl>
+</div>
+</section>
+
+<section class="cf" id="wr-01">
+<figure class="mc-wr" id="mc-01-wr">
+	<canvas class="mine-canvas" id="mc-01" width="300" height="300"></canvas>
+	<figcaption class="c"><a class="capture" rel="mc-01" href="#capture">capture image</a> (opens in new window)</figcaption>
+</figure>
+<div class="stats" id="mc-01-stats">
+	<dl class="cf">
+		<dt>Mines</dt><dd id="mc-01-stats-count">?</dd>
+		<dt>Flags used, unflagged remaining</dt><dd id="mc-01-stats-flags">?</dd>
+		<dt>Current space</dt><dd id="mc-01-stats-current">?</dd>
+		<dt>Surrounding</dt><dd id="mc-01-stats-surround">?</dd>
+		<dt>Raw %age (with verified flags)</dt><dd id="mc-01-stats-raw">?</dd>
+		<dt>Heuristic %age</dt><dd id="mc-01-stats-adj">?</dd>
+		<dt>Win condition</dt><dd id="mc-01-stats-win">not met</dd>
+	</dl>
+</div>
+</section>
+
+<section class="cf" id="wr-02">
+<figure class="mc-wr" id="mc-02-wr">
+	<canvas class="mine-canvas" id="mc-02" width="300" height="300"></canvas>
+	<figcaption class="c"><a class="capture" rel="mc-02" href="#capture">capture image</a> (opens in new window)</figcaption>
+</figure>
+<div class="stats" id="mc-02-stats">
+	<dl class="cf">
+		<dt>Mines</dt><dd id="mc-02-stats-count">?</dd>
+		<dt>Flags used, unflagged remaining</dt><dd id="mc-02-stats-flags">?</dd>
+		<dt>Current space</dt><dd id="mc-02-stats-current">?</dd>
+		<dt>Surrounding</dt><dd id="mc-02-stats-surround">?</dd>
+		<dt>Raw %age (with verified flags)</dt><dd id="mc-02-stats-raw">?</dd>
+		<dt>Heuristic %age</dt><dd id="mc-02-stats-adj">?</dd>
+		<dt>Win condition</dt><dd id="mc-02-stats-win">not met</dd>
+	</dl>
+</div>
+</section>
+
+<section class="cf" id="wr-03">
+<figure class="mc-wr" id="mc-03-wr">
+	<canvas class="mine-canvas" id="mc-03" width="300" height="300"></canvas>
+	<figcaption class="c"><a class="capture" rel="mc-03" href="#capture">capture image</a> (opens in new window)</figcaption>
+</figure>
+<div class="stats" id="mc-03-stats">
+	<dl class="cf">
+		<dt>Mines</dt><dd id="mc-03-stats-count">?</dd>
+		<dt>Flags used, unflagged remaining</dt><dd id="mc-03-stats-flags">?</dd>
+		<dt>Current space</dt><dd id="mc-03-stats-current">?</dd>
+		<dt>Surrounding</dt><dd id="mc-03-stats-surround">?</dd>
+		<dt>Raw %age (with verified flags)</dt><dd id="mc-03-stats-raw">?</dd>
+		<dt>Heuristic %age</dt><dd id="mc-03-stats-adj">?</dd>
+		<dt>Win condition</dt><dd id="mc-03-stats-win">not met</dd>
+	</dl>
+</div>
+</section>
+
+<section class="cf" id="wr-04">
+<figure class="mc-wr" id="mc-04-wr">
+	<canvas class="mine-canvas" id="mc-04" width="300" height="300"></canvas>
+	<figcaption class="c"><a class="capture" rel="mc-04" href="#capture">capture image</a> (opens in new window)</figcaption>
+</figure>
+<div class="stats" id="mc-04-stats">
+	<dl class="cf">
+		<dt>Mines</dt><dd id="mc-04-stats-count">?</dd>
+		<dt>Flags used, unflagged remaining</dt><dd id="mc-04-stats-flags">?</dd>
+		<dt>Current space</dt><dd id="mc-04-stats-current">?</dd>
+		<dt>Surrounding</dt><dd id="mc-04-stats-surround">?</dd>
+		<dt>Raw %age (with verified flags)</dt><dd id="mc-04-stats-raw">?</dd>
+		<dt>Heuristic %age</dt><dd id="mc-04-stats-adj">?</dd>
+		<dt>Win condition</dt><dd id="mc-04-stats-win">not met</dd>
+	</dl>
+</div>
+</section>
+
+<section class="cf" id="wr-05">
+<figure class="mc-wr" id="mc-05-wr">
+	<canvas class="mine-canvas" id="mc-05" width="300" height="300"></canvas>
+	<figcaption class="c"><a class="capture" rel="mc-05" href="#capture">capture image</a> (opens in new window)</figcaption>
+</figure>
+<div class="stats" id="mc-05-stats">
+	<dl class="cf">
+		<dt>Mines</dt><dd id="mc-05-stats-count">?</dd>
+		<dt>Flags used, unflagged remaining</dt><dd id="mc-05-stats-flags">?</dd>
+		<dt>Current space</dt><dd id="mc-05-stats-current">?</dd>
+		<dt>Surrounding</dt><dd id="mc-05-stats-surround">?</dd>
+		<dt>Raw %age (with verified flags)</dt><dd id="mc-05-stats-raw">?</dd>
+		<dt>Heuristic %age</dt><dd id="mc-05-stats-adj">?</dd>
+		<dt>Win condition</dt><dd id="mc-05-stats-win">not met</dd>
+	</dl>
+</div>
+</section>
+
+<footer>&copy; 2014 Alex Rosario</footer>
+
+<script type="text/javascript">/* <![CDATA[ */
+/**
+ * ncanvas.js
+ * @param  {string} id The canvas element id
+ * @return {ncanvas object}    A wrapped canvas, or null if it didn't work
+ */
+function ncanvas(id) {
+	var c = document.getElementById(id);
+	if (!c) {
+		//console.log("couldn't find id "+id);
+		return null;
+	}
+	if (c&&c.getContext) {
+		function _plot(q){return function(px,py,col){q.fillStyle=col;q.fillRect(px,py,1,1);};}
+		function _get(q){return function(pw,ph){return q.createImageData(pw,ph);};}
+		function _put(q){return function(da,px,py){q.putImageData(da,px,py);};}
+		function _clear(q){return function(){q.clearRect();};}
+		function _path(q){return function(p,col){
+			var i=0;
+			q.fillStyle=col;
+			q.beginPath();
+			q.moveTo(p[i].x,p[i].y); while(++i<p.length) {
+				if (p[i].type&&p[i].type==="bezier") q.bezierCurveTo(
+					p[i].control[0].x,p[i].control[0].y,
+					p[i].control[1].x,p[i].control[1].y,
+					p[i].x,p[i].y
+				);
+				else q.lineTo(p[i].x,p[i].y);
+			}
+			q.fill();
+			q.closePath();
+		};}
+		function _fill(q){return function(px,py,pw,ph,col){q.fillStyle=col;q.fillRect(px,py,pw,ph);};}
+		function _stroke(q){return function(px,py,pw,ph,col){q.strokeStyle=col;q.lineWidth=1;q.strokeRect(px,py,pw,ph);}};
+		function _text(q){return function(t,px,py,pw,col){q.fillStyle=col;q.fillText(t,px,py,pw);};}
+		function _blit(q){return function(src,px,py){q.drawImage(src,px,py);};}
+		function _toURL(q){return function(){q.toDataURL();};}
+		var _c = c.getContext('2d');
+		var ret = {
+			get element(){return c;},
+			get id(){return id;},
+			get context(){return _c;},	// raw context
+			"clear":_clear(_c),
+			"fillRect":_fill(_c),
+			"strokeRect":_stroke(_c),
+			"fillText":_text(_c),
+			"path":_path(_c),
+			"plot":_plot(_c),
+			"blitImage":_blit(_c),
+			"createImageData":_get(_c),
+			"putImageData":_put(_c),
+			"toDataURL":_toURL(c),
+			get width(){return c.width;},
+			set width(v){c.width = v;},
+			get height(){return c.height;},
+			set height(v){c.height = v;}
+		};
+		return ret;
+	}
+	else {
+		console.log("couldn't get context");
+		return null;
+	}
+}
+/* ]]> */</script>
+<script type="text/javascript" src="javascripts/mine.js"></script>
+<script type="text/javascript">/* <![CDATA[ */
+var ms = (function MineFactory(){
+	var opt = {"fontSize":10,"fontFamily":"monospace","toString":function(){return this.fontSize+"px "+this.fontFamily;}};
+	function _draw(c,t) {
+		var w = c.width, h = c.height,
+			cw = w/t.width, ch = h/t.height;
+		var i, j, x, y, q, z, col = "#cccccc", chi = "rgba(255,255,255,0.5)", s, d;
+		//console.log("DRAW",c.id,w,h,t.width,t.height,cw,ch);
+		c.fillRect(0,0,w,h,"rgb(0,0,0)");
+		y = 0;
+		for (i=0; i<t.width; ++i) {
+			x = 0; s = ""; d = "";
+			for (j=0; j<t.height; ++j) {
+				if (!t.grid[i][j].open) {
+					if (t.grid[i][j].flagged) col = "#0000ff";
+					else col = "#888888";
+				}
+				else if (t.grid[i][j].value>0) col = "#ff0000";
+				else if (t.grid[i][j].flagged) col = "#000000";
+				else if (t.grid[i][j].surrounding>0) col = "#00ff00";
+				else col = "#cccccc";
+				s += ""+(t.grid[i][j]); d += " "+x+","+y+","+col;
+				c.fillRect(x,y, cw,ch, col);
+				q = t.grid[i][j].toString(); z = c.context.measureText(q).width;
+				if (t.grid[i][j].open&&t.grid[i][j].value<1&&t.grid[i][j].surrounding>0)
+					c.fillText(q,x+(cw-z)/2,y+ch/2,z>cw?cw:z,"#ffffff");
+				c.strokeRect(x,y, cw,ch, chi);
+				x += cw;
+			}
+			y += ch;
+			//console.log(i,s);
+		}
+	}
+	function _hilite(c,t,x,y) {
+		var w = c.width, h = c.height,
+			cw = w/t.width, ch = h/t.height, chi = "#ffff22";
+		if (x>=0&&x<t.width&&y>=0&&y<t.height) c.strokeRect(x*cw,y*ch,cw,ch, chi);
+	}
+	function _tip(c,x,y,t) {
+		var w = c.context.measureText(t).width; if (w>(c.width-x)) w = (c.width-x);
+		c.path([
+			{x:x,y:y},
+			{x:x,y:y-(opt.fontSize+8)},
+			{x:x+4,y:y-(opt.fontSize+12),type:"bezier",control:[{x:x,y:y-18},{x:x+2,y:y-(opt.fontSize+12)}]},
+			{x:x+w+8,y:y-(opt.fontSize+12)},
+			{x:x+w+8,y:y-4},
+			{x:x+4,y:y-4}
+		], "#66f");
+		c.fillText(t,x+4,y-10,w,"#000");
+	}
+	function _cap(m,id) {console.log("capture",id); var el; if ((el=m.buffers[id])) window.open(el.element.toDataURL(),"");}
+	function _attach_cap(m) {
+		function _ea(e) {
+			//alert("Capture:"+l.rel);
+			e.preventDefault();
+			var l = e.srcElement, id = l.rel, el;
+			_cap(m,id);
+			//console.log(e);
+		}
+		var a = document.querySelectorAll('a.capture');
+		if (a) {
+			console.log(typeof a, a);
+			for (var i=0; i<a.length; ++i) a[i].onclick = _ea;
+			//a.forEach(_ea);
+		}
+	}
+	var m = {"buffers":{},"grids":{}};
+	m.init = function(id) {this.buffers[id]=ncanvas(id); this.buffers[id].context.font = opt.toString();};
+	m.draw = function(id,t) {_draw(this.buffers[id],t);};
+	m.highlight = function(id,t,x,y) {_hilite(this.buffers[id],t,x,y);};
+	m.attach = function(id,s) {
+		var r = this;
+		r.grids[id] = s;
+		function _move(e) {
+			var x = e.layerX, y = e.layerY;
+			var g = r.grids[id], j = (g.width*x/this.width)|0, i = (g.height*y/this.height)|0;
+			var v;
+			r.draw(id,g);
+			r.highlight(id,g,j,i);
+			var st = id+"-stats", tip = "["+j+","+i+"]";
+			var stats = document.getElementById(st),
+				stats_cur = document.getElementById(st+"-current"),
+				stats_count = document.getElementById(st+"-count"),
+				stats_flags = document.getElementById(st+"-flags"),
+				stats_win = document.getElementById(st+"-win"),
+				stats_raw = document.getElementById(st+"-raw"),
+				stats_adj = document.getElementById(st+"-adj"),
+				stats_sur = document.getElementById(st+"-surround");
+			if (stats_cur) {
+				var msg_cur = j+","+i,
+					msg_sur = "0",
+					msg_raw = "",
+					msg_adj = "",
+					msg_p = "";
+				if (g.grid[i][j].flagged) {
+					msg_cur += " (flagged)";
+					tip += " flagged";
+				}
+				else if (g.grid[i][j].open) {
+					if (g.grid[i][j].value>0) {
+						msg_cur += " (mine)";
+						msg_sur = "doesn't matter";
+						msg_raw = "100%";
+						msg_adj = "100%";
+						tip += " MINE";
+					}
+					else {
+						if (g.grid[i][j].surrounding>0) {
+							msg_sur = g.grid[i][j].surrounding+" surrounding";
+							//msg_sur += " TODO: calculate surrounding %ages";
+						}
+						msg_raw = "0%";
+						msg_adj = "0%";
+						tip += " safe";
+					}
+				}
+				else {
+					msg_cur += " (covered)";
+					if (g.mines.tripped>0) {
+						msg_raw = "already lost";
+						msg_adj = "already lost";
+					}
+					else {
+						v = (g.mines.total-g.mines.tripped)-g.mines.flagged;
+						msg_raw = (v)+"/"+g.covered();
+						msg_adj = (v)+"/"+g.covered();
+						v = g.probability(j,i);
+						msg_adj = v>0?(v.toFixed(2)):msg_adj;
+					}
+					msg_sur = "?";
+				}
+				stats_count.innerHTML = g.mines.total;
+				stats_flags.innerHTML = (g.mines.used)+", "+(g.mines.total-g.mines.flagged);
+				stats_win.innerHTML = g.mines.tripped>0?"lost":((g.mines.total>g.mines.flagged||!g.complete()?"not ":"")+"met");
+				stats_cur.innerHTML = msg_cur;
+				stats_sur.innerHTML = msg_sur;
+				stats_raw.innerHTML = msg_raw;
+				stats_adj.innerHTML = msg_adj;
+			}
+			_tip(r.buffers[id],x,y,tip);
+			//else console.log("Couldn't find '"+(st+"-current")+"'");
+		}
+		r.init(id);
+		r.buffers[id].element.onmouseover = _move;
+		r.buffers[id].element.onmousemove = _move;
+		r.buffers[id].element.onmouseout = function(e) {r.draw(id,r.grids[id]);};
+		// TODO: convert onclick to onmousedown+onmouseup + checking e.which for left/right-click
+		r.buffers[id].element.oncontextmenu = function(e) {e.preventDefault(); return false;};
+		r.buffers[id].element.onmouseup = function(e) {
+			e.preventDefault();
+			var x = e.layerX, y = e.layerY;
+			var j = (r.grids[id].width*x/this.width)|0, i = (r.grids[id].height*y/this.height)|0;
+			if (e.shiftKey&&e.ctrlKey) _cap(r,id);
+			else r.grids[id].click(/*e.button+(e.shiftKey|0)*/e.button,j,i);
+			//console.log(e);
+			r.draw(id,r.grids[id]);
+			return false;
+		};
+		r.draw(id,s);
+	};
+	_attach_cap(m);
+	return m;
+})();
+
+var sw = [new Sweeper(10,10), new Sweeper(3,4), new Sweeper(4,9), new Sweeper(9,10), new Sweeper(8,10), new Sweeper(2,1)];
+
+ms.attach("mc-00",sw[0]);
+ms.attach("mc-01",sw[1]);
+ms.attach("mc-02",sw[2]);
+ms.attach("mc-03",sw[3]);
+ms.attach("mc-04",sw[4]);
+ms.attach("mc-05",sw[5]);
+
+/*
+ms.init("mc-00");
+ms.draw("mc-00", sw);
+ms.buffers["mc-00"].element.onmouseover = ms.buffers["mc-00"].element.onmousemove = function(e) {
+	var x = e.layerX, y = e.layerY;
+	var j = (sw.width*x/this.width)|0, i = (sw.height*y/this.height)|0;
+	ms.draw("mc-00",sw);
+	ms.highlight("mc-00",sw,j,i);
+};
+ms.buffers["mc-00"].element.onmouseout = function(e) {ms.draw("mc-00",sw);};
+ms.buffers["mc-00"].element.onclick = function(e) {
+	var x = e.layerX, y = e.layerY;
+	var j = (sw.width*x/this.width)|0, i = (sw.height*y/this.height)|0;
+	sw.click(e.button+(e.shiftKey|0),j,i);
+	console.log(e);
+	ms.draw("mc-00",sw);
+};
+*/
+/* ]]> */</script>
+</body></html>
